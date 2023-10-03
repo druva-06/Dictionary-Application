@@ -1,47 +1,54 @@
 import React from "react";
 import DisplayWord from "./DisplayWord";
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addData } from "../redux/actions/dataAction";
+import axios from "axios";
+import Loader from "./Loader";
 
 const Home = () => {
 
     const [word, setWord] = useState('')
+    const [wordsDetail, setWordsDetail] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
 
-    const data = useSelector((state) => state)
-    console.log(data)
     const dispatch = useDispatch()
 
     const searchWord = async() => {
-
-        dispatch(addData(word))
+        setIsLoading(true)
+        const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+        setIsLoading(false)
+        let wordList = response.data.map((element) => {
+            return {
+                word: element.word,
+                phonetics: element.phonetics.map((phonetic) => {
+                    return {
+                        text: phonetic.text,
+                        audio: phonetic.audio,
+                    }
+                }),
+                meanings: element.meanings.map((meaning) => {
+                    return {
+                        partOfSpeech: meaning.partOfSpeech,
+                        definations: meaning.definitions.map((definition) => {
+                            return definition.definition
+                        }),
+                    }
+                }),
+            }
+        })
+        dispatch(addData(wordList))
+        setWordsDetail(wordList)
     }
-
-    let history = {
-        id: 1,
-        word: 'experience',
-        phonetic: "/ɪkˈspɪə.ɹɪəns/",
-        audio: "https://api.dictionaryapi.dev/media/pronunciations/en/experience-uk.mp3",
-        nounDefinations: ["The effect upon the judgment or feelings produced by any event, whether witnessed or participated in; personal and direct impressions as contrasted with description or fancies; personal acquaintance; actual enjoyment or suffering", "An activity one has performed."],
-        verbDefinitions: ["To observe certain events; undergo a certain feeling or process; or perform certain actions that may alter one or contribute to one's knowledge, opinions, or skills.","To observe certain events; undergo a certain feeling or process; or perform certain actions that may alter one or contribute to one's knowledge, opinions, or skills."]
-    }
-    let historys = [history,history];
 
     return  (
         <div className="home">
+            {isLoading===true && <Loader/>}
             <div className="search-box">
                 <input type="text" onChange={(e) => setWord(e.target.value)} placeholder="Search Word..!"/>
                 <button onClick={searchWord}>Search</button>
             </div>
-            <div className="search-item">
-                {
-                    historys.map((history) => (
-                        <DisplayWord
-                            wordDetail = {history}
-                        />
-                    ))
-                }
-            </div>
+            { wordsDetail!=null && <DisplayWord wordDetail = {wordsDetail}/> }
         </div>
     )
 }
