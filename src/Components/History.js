@@ -6,8 +6,6 @@ const History = () => {
 
     const data = useSelector((state) => state)
 
-    console.log(data)
-
     return (
         <div className="history">
             <div className="search-history">

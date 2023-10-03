@@ -1,6 +1,21 @@
 import React from "react";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const DisplayWord = ({wordDetail}) => {
+    const { word } = useParams();
+
+    const data = useSelector((state) => state)
+
+    if(word !== undefined){
+        console.log('Started word')
+        data.forEach(element => {
+            if(element[0].word === word){
+                wordDetail = element;
+            }
+        });
+    }
+
     return (
         <div className="display-words">
             {
