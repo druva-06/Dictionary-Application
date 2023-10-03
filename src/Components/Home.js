@@ -16,29 +16,34 @@ const Home = () => {
 
     const searchWord = async() => {
         setIsLoading(true)
-        const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+        try{
+            const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+            let wordList = response.data.map((element) => {
+                return {
+                    word: element.word,
+                    phonetics: element.phonetics.map((phonetic) => {
+                        return {
+                            text: phonetic.text,
+                            audio: phonetic.audio,
+                        }
+                    }),
+                    meanings: element.meanings.map((meaning) => {
+                        return {
+                            partOfSpeech: meaning.partOfSpeech,
+                            definations: meaning.definitions.map((definition) => {
+                                return definition.definition
+                            }),
+                        }
+                    }),
+                }
+            })
+            dispatch(addData(wordList))
+            setWordsDetail(wordList)
+        }
+        catch(err){
+            console.log(err.message)
+        }
         setIsLoading(false)
-        let wordList = response.data.map((element) => {
-            return {
-                word: element.word,
-                phonetics: element.phonetics.map((phonetic) => {
-                    return {
-                        text: phonetic.text,
-                        audio: phonetic.audio,
-                    }
-                }),
-                meanings: element.meanings.map((meaning) => {
-                    return {
-                        partOfSpeech: meaning.partOfSpeech,
-                        definations: meaning.definitions.map((definition) => {
-                            return definition.definition
-                        }),
-                    }
-                }),
-            }
-        })
-        dispatch(addData(wordList))
-        setWordsDetail(wordList)
     }
 
     return  (
